@@ -1,0 +1,15 @@
+#!/bin/sh
+# a simple wrapper around bib2bib that removes any personal annotations
+
+bib2bib --no-comment \
+  --remove annote \
+  --remove mendeley-tags \
+  --remove keywords \
+  --remove comment \
+  --remove owner \
+  --remove timestamp \
+  --remove review \
+  --remove file \
+  "$@"
+#  --remove abstract \
+#  --remove url \

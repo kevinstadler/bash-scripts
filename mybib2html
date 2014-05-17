@@ -1,0 +1,15 @@
+#!/bin/sh
+
+if [ $# != 1 ]; then
+  echo "Usage: mybib2html <file.bib>"
+  exit
+fi
+if [ ! -f "$1" ]; then
+  echo "bib-file does not exist: $1"
+  exit
+fi
+
+bib2bibclean -q -c 'author : "Stadler, Kevin"' -ob publications.bib "$1"
+# -r -s '$date'
+
+bibtex2html -r --sort-by-date --style plain --no-keys -t "Kevin Stadler's publications" --both publications.bib
