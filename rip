@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# required packages:
+# * cdparanoia (cdparanoia)
+# * libcddb-get-perl (cddbget)
+# * flac (flac)
+
+cd /tmp
+
+FILE=tracks.$USER
+
+if [ $# == 1 ]; then
+  START=$1
+else
+  START=1
+fi
+
+if [ -f $FILE ]; then
+  echo "Using info from $FILE.."
+else
+  cdparanoia -Q 2> $FILE
+  if [ $? -ne 0 ]; then
+    echo "No disk in drive?"
+    rm $FILE
+    exit 1
+  fi
+  TRACKS=`tail -n 3 $FILE | grep "^ " | sed "s/ //g" | sed "s/\..*//g"`
+
+  echo "1" | cddbget -t > $FILE
+  if [ $? -ne 0 ]; then
+    echo "Choose: artist: ARTIST
+title: TITLE
+trackno: $TRACKS
+year: YEAR" > $FILE
+    for (( i=1 ; i <= $TRACKS ; i++ )) do
+      printf "\ntrack %2d:]: " $i >> $FILE
+    done
+    echo "Check and update file /tmp/$FILE"
+    exit 1
+  fi
+  exit 1
+fi
+
+#vim $FILE
+ARTIST=`cat $FILE | grep "Choose: artist: " | sed "s/.*t: //g"`
+ALBUM=`cat $FILE | grep "title: " | sed "s/.*: //g"`
+TRACKS=`cat $FILE | grep "trackno: " | sed "s/.*: //g"`
+YEAR=`cat $FILE | grep "year: " | sed "s/.*: //g"`
+echo "Rip $ARTIST - $ALBUM ($YEAR, $TRACKS tracks)?"
+
+ESCAPEDARTIST=`echo $ARTIST | sed "s=/=-=g"`
+ESCAPEDALBUM=`echo $ALBUM | sed "s=/=-=g"`
+TARGETDIR="$HOME/Music/$ESCAPEDARTIST/$YEAR - $ESCAPEDALBUM"
+
+echo "Creating target directory $TARGETDIR"
+mkdir -p "$TARGETDIR"
+FILES=""
+for (( i=$START ; i <= $TRACKS; i++ )) do
+  printf -v NUM "%02d" $i
+  printf -v PAT "%3d" $i
+  TITLE=`cat $FILE | grep "track$PAT:" | sed "s/.*]: //g" | sed "s=/=-=g"`
+  echo "Ripping track $i: $TITLE"
+#  cdparanoia -e $i $i.wav > /dev/null # no proper progress when outputting to stderr
+# maybe -q for less output?
+  cdparanoia $i $i.wav
+  TARGET="$TARGETDIR/$ESCAPEDARTIST - $NUM - $TITLE.flac"
+  flac --best -T TITLE="$TITLE" -T TRACKNUMBER="$i/$TRACKS" -T DATE="$YEAR" -T ARTIST="$ARTIST" -T ALBUM="$ALBUM" -o "$TARGET" $i.wav
+  rm $i.wav
+  echo "---------------------------------------------------------------"
+  echo ""
+  echo ""
+  echo ""
+done
+# add replay-gain for tracks as well as full album!
+echo "Adding replay-gain"
+metaflac --preserve-modtime --add-replay-gain "$TARGETDIR"/*
+echo "Done!"
+rm "$FILE"
