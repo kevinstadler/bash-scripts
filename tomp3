@@ -1,0 +1,19 @@
+#!/bin/sh
+
+OUTF=`basename "$1" .flac`.mp3
+
+if [ "$2" != "" ]; then
+  if [ -d "$2" ]; then
+    OUTF=$2/`echo "$OUTF" | sed 's/[^\/]*$/&/'`
+  else
+    OUTF=$2
+  fi
+fi
+
+TITLE=`metaflac "$1" --show-tag=TITLE | sed s/.*=//g` # | iconv -t ISO-8859-1`
+TRACKNUMBER=`metaflac "$1" --show-tag=TRACKNUMBER | sed s/.*=//g` # | iconv -t ISO-8859-1`
+DATE=`metaflac "$1" --show-tag=DATE | sed s/.*=//g` # | iconv -t ISO-8859-1`
+ARTIST=`metaflac "$1" --show-tag=ARTIST | sed s/.*=//g` # | iconv -t ISO-8859-1`
+ALBUM=`metaflac "$1" --show-tag=ALBUM | sed s/.*=//g` # | iconv -t ISO-8859-1`
+
+flac -dc "$1" | lame -m j --vbr-new -h --tt "$TITLE" --tn "$TRACKNUMBER" --ty "$DATE" --ta "$ARTIST" --tl "$ALBUM" --id3v2-only - "$OUTF"

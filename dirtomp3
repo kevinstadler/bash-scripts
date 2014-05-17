@@ -1,0 +1,13 @@
+#!/bin/sh
+# strip slash
+DIR=`echo $1 | sed -e 's,/$,,'`
+if [ $# == 2 ]; then
+  NEWDIR=$2/`basename "$DIR"`
+else
+  NEWDIR=$DIR" (mp3)"
+fi
+echo $NEWDIR
+mkdir "$NEWDIR"
+for file in "$DIR"/*.flac; do
+  tomp3 "$file" "$NEWDIR"
+done

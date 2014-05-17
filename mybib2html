@@ -1,4 +1,9 @@
 #!/bin/sh
+# extracts publications by author name and formats them in a neat html file
+# using bibtex2html. if a file 'selectedpublications' with bibtex keys is found
+# in the same directory, the global publications.html file will contain only
+# those bib entries specified in there, while the _bib and _abstracts files
+# will contain all publications by the author
 
 if [ $# != 1 ]; then
   echo "Usage: mybib2html <file.bib>"
@@ -9,7 +14,13 @@ if [ ! -f "$1" ]; then
   exit
 fi
 
-bib2bibclean -q -c 'author : "Stadler, Kevin"' -ob publications.bib "$1"
-# -r -s '$date'
+bib2bibclean -q -r -s '$date' -c 'author : "Stadler, Kevin"' -ob publications.bib "$1"
 
-bibtex2html -r --sort-by-date --style plain --no-keys -t "Kevin Stadler's publications" --both publications.bib
+if [ -f "selectedpublications" ]; then
+  # if selected publications are for copy-pasting into another document, the
+  # html headers and footers can be omitted with --nodoc
+  bibtex2html --nodoc --citefile "selectedpublications" --style plain --no-keys -t "Selected publications" --both publications.bib
+  mv publications.html selectedpublications.html
+fi
+
+bibtex2html --style-sheet "style.css" --no-keys -t "Kevin Stadler's publications" --both publications.bib

@@ -1,0 +1,20 @@
+#!/bin/sh
+
+OUTF=`basename "$1" .ogg`.mp3
+
+if [ "$2" != "" ]; then
+  if [ -d "$2" ]; then
+    OUTF=$2/`echo "$OUTF" | sed 's/[^\/]*$/&/'`
+  else
+    OUTF=$2
+  fi
+fi
+echo $OUTF
+
+TITLE=`ogginfo "$1" | grep TITLE | sed s/.*=//g | iconv -t ISO-8859-1`
+TRACKNUMBER=`ogginfo "$1" | grep TRACKNUMBER | sed s/.*=//g | iconv -t ISO-8859-1`
+DATE=`ogginfo "$1" | grep DATE | sed s/.*=//g | iconv -t ISO-8859-1`
+ARTIST=`ogginfo "$1" | grep ARTIST | sed s/.*=//g | iconv -t ISO-8859-1`
+ALBUM=`ogginfo "$1" | grep ALBUM | sed s/.*=//g | iconv -t ISO-8859-1`
+
+oggdec -o - "$1" | lame -m j --vbr-new -h --tt "$TITLE" --tn "$TRACKNUMBER" --ty "$DATE" --ta "$ARTIST" --tl "$ALBUM" --id3v2-only - "$OUTF"
