@@ -1,0 +1,31 @@
+#!/bin/sh
+# wee shell script for cutting pdf files using ghostscript.
+# the first parameter is the input file, second and third parameter
+# the first and last page you want to be part of the output document
+
+if [ $# -eq 3 ]; then
+  OUTF=`basename "$1" .pdf`-p$2-$3.pdf
+elif [ $# -eq 4 ]; then
+  OUTF=$4
+else
+  echo "Usage: cutpdf <infile> <firstpage> <lastpage> [outfile]"
+  exit 1
+fi
+
+# check for pdftk, otherwise use ghostscript
+#which pdftk > /dev/null
+#if [ $? -eq 0 ]; then
+  # pdftk
+#  echo "Calling pdftk"
+#  pdftk A="$1" cat A$2-$3 output "$OUTF"
+#else
+
+# ghostscript
+gs -sDEVICE=pdfwrite -dNOPAUSE -dBATCH -dSAFER -dFirstPage=$2 -dLastPage=$3 -sOutputFile="$OUTF" "$1"
+
+if [ $? -eq 0 ]; then
+  echo "Cutting successful, file output to $OUTF"
+else
+  echo "Some error occurred"
+  exit 1
+fi

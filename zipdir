@@ -1,0 +1,4 @@
+#!/bin/sh
+# because I always forget the argument order of the zip command. takes a
+# directory and zips it up in a .zip of the same name in the current directory
+zip -r "`basename $1`.zip" "$1"
