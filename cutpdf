@@ -3,6 +3,7 @@
 # the first parameter is the input file, second and third parameter
 # the first and last page you want to be part of the output document
 
+# TODO make last page argument optional (default to end of document)
 if [ $# -eq 3 ]; then
   OUTF=`basename "$1" .pdf`-p$2-$3.pdf
 elif [ $# -eq 4 ]; then

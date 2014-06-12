@@ -1,0 +1,67 @@
+#!/bin/sh
+# tiles the pages of the given pdf so that they can be duplex printed and
+# folded in the middle to make a booklet half the size of the original pages
+#
+# requires pdftk and pdfjam (which comes as part of most LaTeX distros)
+
+which pdftk > /dev/null
+if [ $? -ne 0 ]; then
+  echo "Dependency pdftk not found"
+  exit 1
+fi
+which pdfjam > /dev/null
+if [ $? -ne 0 ]; then
+  echo "Dependency pdfjam not found"
+  exit 1
+fi
+
+if [ $# -ne 1 ]; then
+  echo "Usage: makebooklet <infile>"
+  exit 1
+fi
+
+OUTF="`basename $1 .pdf`-booklet.pdf"
+DUMP=`pdftk "$1" dump_data output`
+if [ $? -ne 0 ]; then
+  echo "\nError processing input file '$1'"
+  exit 1
+fi
+NPAGES=$((`echo "$DUMP" | grep "NumberOfPages:" | tail -c +16`))
+BLANKS=$(((4-NPAGES%4)%4))
+PRINTPAGES=$(((NPAGES+BLANKS)/4))
+echo "The $NPAGES page booklet can be printed duplex onto $PRINTPAGES sheets\n"
+
+# handle first page
+STARTPAGE=2
+case "$BLANKS" in
+  0 )
+    PAGES="1,$NPAGES,2,$((NPAGES-1))" ;;
+  1 )
+    PAGES="1,{},2,$NPAGES" ;;
+  2 )
+    PAGES="1,{},2,{}" ;;
+  3 )
+    # handle the special case
+    PAGES="1,{},2,{},3,{},4,$NPAGES"
+    STARTPAGE=3 ;;
+esac
+
+# handle the special special case
+if [ $NPAGES -eq 1 ]; then
+  PAGES="1,{},{},{}"
+fi
+
+if [ $PRINTPAGES -gt $STARTPAGE ]; then
+  for i in $(seq $STARTPAGE $PRINTPAGES)
+  do
+    PAGES="$PAGES,$((2*i-1)),$((4*PRINTPAGES-(2*i)+2)),$((2*i)),$((4*PRINTPAGES-(2*i)+1))"
+  done
+fi
+
+pdfnup -q --nup 2x1 --landscape "$1" "$PAGES" --outfile "$OUTF"
+
+if [ $? -eq 0 ]; then
+  echo "Done! Output written to $OUTF"
+else
+  exit 1
+fi
