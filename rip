@@ -73,6 +73,5 @@ for (( i=$START ; i <= $TRACKS; i++ )) do
 done
 # add replay-gain for tracks as well as full album!
 echo "Adding replay-gain"
-metaflac --preserve-modtime --add-replay-gain "$TARGETDIR"/*
-echo "Done!"
+metaflac --preserve-modtime --add-replay-gain "$TARGETDIR"/*.flac && echo "Done!"
 rm "$FILE"

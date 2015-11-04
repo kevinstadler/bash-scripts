@@ -1,0 +1,4 @@
+#!/bin/sh
+# drop lines that contain only a comment, purge everything following non-escaped
+# percent signs on the remaining lines
+grep -v "^%.*" "$1" | sed -e "s/\([^\]\)%.*/\1/" # > `basename "$1" ".tex" 

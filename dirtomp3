@@ -1,7 +1,7 @@
 #!/bin/sh
 # strip slash
 DIR=`echo $1 | sed -e 's,/$,,'`
-if [ $# == 2 ]; then
+if [ $# -eq 2 ]; then
   NEWDIR=$2/`basename "$DIR"`
 else
   NEWDIR=$DIR" (mp3)"

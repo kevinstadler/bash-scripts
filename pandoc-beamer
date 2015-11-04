@@ -1,0 +1,2 @@
+#!/bin/sh
+pandoc -t beamer -i -V theme:Warsaw "$1" -o "`basename $1 .md`.pdf"

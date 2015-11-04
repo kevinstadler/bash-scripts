@@ -2,38 +2,50 @@
 # takes a LaTeX .aux file, extracts all references cited in the LaTeX
 # document and writes them to references.bib
 
+OUTF="references.bib"
+KEYFILE="keys.tmp"
+
 if [ $# != 1 ]; then
   echo "Usage: extract-references <filename.aux>"
   exit 1
 elif [ ! -f "$1" ]; then
   echo "File does not exist: $1"
   exit 1
+elif [ -f "$OUTF" ]; then
+  echo "$OUTF already exists, aborting."
+  exit 1
 fi
 
-# support for multiple .bib files
-BIBS=""
-echo
-echo "Bibliography files:"
-for BIB in `grep '^\\\\bibdata{' "$1" | sed -e 's/^\\\\bibdata{\(.\+\)}/\1/'`;
-do
-  echo "* $BIB"
-  BIBS="$BIBS $BIB.bib"
-done
-echo
+which aux2bib > /dev/null
+if [ $? -eq 0 ]; then
+  aux2bib "$1" | bib2bibclean -q -s \$key -ob "$OUTF" -oc "$KEYFILE"
+else
 
-KEYS=""
-echo "Exporting keys: "
-for KEY in `grep '^\\\\bibcite{' "$1" | sed -e 's/^\\\\bibcite{\(\w\+\).\+/\1/'`;
-do 
-  KEYS="$KEYS \$key=\"$KEY\" or"
-  echo "* $KEY"
-done
-echo
+  # support for multiple .bib files
+  BIBS=""
+  echo
+  echo "Bibliography files:"
+  for BIB in `grep '^\\\\bibdata{' "$1" | sed -e 's/^\\\\bibdata{\(.\+\)}/\1/'`;
+  do
+    echo "* $BIB"
+    BIBS="$BIBS $BIB.bib"
+  done
+  echo
 
-# same as `aux2bib "$1" > references.bib` but removes various (private) bibtex-fields
-bib2bibclean -q -c "$KEYS 1=2" -oc references.tmp -ob references.bib $BIBS
+  KEYS=""
+  echo "Exporting keys: "
+  for KEY in `grep '^\\\\bibcite{' "$1" | sed -e 's/^\\\\bibcite{\(\w\+\).\+/\1/'`;
+  do 
+    KEYS="$KEYS \$key=\"$KEY\" or"
+    echo "* $KEY"
+  done
+  echo
+
+  # same as `aux2bib "$1" > references.bib` but removes various (private) bibtex-fields
+  bib2bibclean -q -s \$key -c "$KEYS 1=2" -oc "$KEYFILE" -ob "$OUTF" $BIBS
+fi
 
 echo
-echo "Wrote `cat references.tmp | wc -w` bib-entries to references.bib"
+echo "Wrote `cat $KEYFILE | wc -w` bib-entries to $OUTF"
 echo
-rm references.tmp
+rm "$KEYFILE" 

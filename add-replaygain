@@ -1,0 +1,14 @@
+#!/bin/sh
+# Compute and add replay-gain metadata to a directory of mp3/flac files
+echo "Detecting audio files in current directory.."
+N=`ls -l *.mp3 2> /dev/null | wc -l`
+if [ $N -ne 0 ]; then
+  echo "Adding track and album replay gain to $N mp3 files"
+  mp3gain -p *.mp3
+fi
+N=`ls -l *.flac 2> /dev/null | wc -l`
+if [ $N -ne 0 ]; then
+  echo "Adding track and album replay gain to $N flac files"
+  metaflac --preserve-modtime --add-replay-gain *.flac
+fi
+echo "Done."
