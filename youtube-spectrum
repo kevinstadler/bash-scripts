@@ -1,0 +1,25 @@
+#!/bin/sh
+if [ $# -ne 1 ]; then
+  echo "Convert an audio file to an mp4 video of ffmpeg/avconv's 'spectrum'\nvisualisation, using youtube's recommended upload video/audio encoding"
+  echo "Usage: youtube-spectrum <audio-input-file>"
+  exit 1
+fi
+# https://support.google.com/youtube/answer/1722171
+# image resolutions:
+# 1080p: 1920x1080
+# 720p: 1280x720
+# 480p: 854x480
+# 360p: 640x360
+# 240p: 426x240
+time ffmpeg -i "$1" -filter_complex "[0:a]showspectrum=size=1920x1080:mode=combined" -framerate 24 -map 0:a -codec:v libx264 -crf 15 -tune stillimage -preset veryfast -codec:a copy "$1.mp4"
+# H.264 encoding documentation: https://trac.ffmpeg.org/wiki/Encode/H.264
+# constant rate factor -crf 0 for lossless, up to 51 for maximum compression.
+# increasing/decreasing the crf by 6 approximately halves/doubles the bitrate
+# (no noticable difference between 0 and 20)
+
+# the -preset should only affect encoding speed and filesize, NOT the quality.
+# to list all supported H.264 presets:
+#ffmpeg -f lavfi -i nullsrc -c:v libx264 -preset help -f mp4 -
+
+# other spectrum options: https://ffmpeg.org/ffmpeg-filters.html#showspectrum-1
+# combine multiple visulations: https://trac.ffmpeg.org/wiki/Encode/YouTube

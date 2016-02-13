@@ -5,16 +5,19 @@
 # those bib entries specified in there, while the _bib and _abstracts files
 # will contain all publications by the author
 
+AUTHOR="Stadler, Kevin"
+NEATAUTHOR="Kevin Stadler"
+
 if [ $# != 1 ]; then
   echo "Usage: mybib2html <file.bib>"
-  exit
+  exit 1
 fi
 if [ ! -f "$1" ]; then
   echo "bib-file does not exist: $1"
-  exit
+  exit 1
 fi
 
-bib2bibclean -q -r -s '$date' -c 'author : "Stadler, Kevin"' -ob publications.bib "$1"
+bib2bibclean -q -r -s '$date' -c "author : '$AUTHOR'" -ob publications.bib "$1"
 
 if [ -f "selectedpublications" ]; then
   # if selected publications are for copy-pasting into another document, the
@@ -23,4 +26,4 @@ if [ -f "selectedpublications" ]; then
   mv publications.html selectedpublications.html
 fi
 
-bibtex2html --style-sheet "style.css" --no-keys -t "Kevin Stadler's publications" --both publications.bib
+bibtex2html --style-sheet "style.css" --no-keys -t "$NEATAUTHOR's publications" --both publications.bib

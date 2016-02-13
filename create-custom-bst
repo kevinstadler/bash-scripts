@@ -1,0 +1,16 @@
+#!/bin/bash
+if echo | latex makebst | grep "I can't find file" > /dev/null; then
+  echo "Error: could not find makebst.tex, please install it first (e.g. package latex-bibtex-all on Ubuntu/Debian)"
+fi
+
+if [[ $# -ne 1 || "$1" == -* ]]; then
+  echo"Interactively create a custom bibliography style file for latex using makebst"
+  echo "Usage: create-custom-bst <stylename>"
+  exit 1
+fi
+
+echo -e "To generate your custom style file $1.bst, please answer the following 60 or so\nquestions. Defaults are marked with a * and can be confirmed by just pressing\nenter.\n"
+
+# system("") required to stop (g)awk from buffering more than one line
+awk '{print $1; system("")}' | cat <(echo -e "\n\n$1\n\ny\n\n\n") <(cat -) | \
+  latex makebst | tail -n +52 && echo -e "\nDone, if you selected not to build your new '$1.bst' immediately, you can do so\nnow (or later) by invoking: latex $1.dbj"

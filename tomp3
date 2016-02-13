@@ -1,5 +1,8 @@
 #!/bin/sh
 
+which flac || { echo "Requires flac"; exit 1; }
+which lame || { echo "Requires lame"; exit 1; }
+
 OUTF=`basename "$1" .flac`.mp3
 
 if [ "$2" != "" ]; then

@@ -1,2 +1,5 @@
 #!/bin/sh
-pandoc -t beamer -i -V theme:Warsaw "$1" -o "`basename $1 .md`.pdf"
+# other options:
+# -V theme:Warsaw for a theme with header/footer
+# -i for incremental expansion of headers/lists
+pandoc -t beamer "$1" --bibliography=$HOME/library.bib -o "`basename $1 .md`.pdf"

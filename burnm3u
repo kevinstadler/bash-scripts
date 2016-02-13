@@ -1,18 +1,18 @@
 #!/bin/sh
 # required packages: mp3cd (which requires normalize-audio, sox,..) and cdrdao
+which mp3cd > /dev/null || { echo "Error: Script requires mp3cd"; exit 1; }
+which cdrdao > /dev/null || { echo "Error: Script requires cdrdao"; exit 1; }
+
 TMP="/tmp"
 
 # mp3cd's default /dev/cdrecorder is not present on my machine and changing
 # the target device in the $HOME/.cdrdao file alone isn't enough because mp3cd
-# itself
+# passes the default cdrecorder on to cdrdao
 DEV="/dev/sr0"
 if [ -f "$TMP/cdda.toc" ]; then
   echo "Found disk table-of-contents, commencing burning.."
   # TODO check length of playlist and size of cd
-  # cdrdao disk-info -v 0 | grep "CD-R empty           : yes"
-  # need root for write access (?)
-  echo "$@"
-  mp3cd --no-cd-text -t "$TMP" -d "$DEV" --stage toc_ok -c "--overburn $@"
+  mp3cd --no-cd-text -t "$TMP" -d "$DEV" --stage toc_ok -c "--overburn --speed 8 $@"
 #ERROR: It seems that driver selected by cdrdao for /dev/sr0 does not support CD-TEXT writing. Either disable CD-TEXT via '--no-cd-text' or select a different driver (e.g. try using '--driver generic-mmc-raw')
 else
   if [ $# -ne 1 ]; then
@@ -30,7 +30,8 @@ else
     echo "$ wodim -prcap"
     echo "and then passing a suitably low speed to burnm3u, e.g."
     echo "$ burnm3u --speed 8"
-    cdrdao disk-info -v 0 | grep "CD-R empty           : yes"
+    DISK=`cdrdao disk-info -v 0 2> /dev/null`
+    echo $DISK | grep "CD-R empty           : yes"
     if [ $? -ne 0 ]; then
       echo "Also don't forget to put in a blank cd!"
     fi

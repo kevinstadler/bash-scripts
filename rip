@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # required packages:
-# * cdparanoia (cdparanoia)
-# * libcddb-get-perl (cddbget)
-# * flac (flac)
+which cdparanoia > /dev/null || { echo "Requires cdparanoia"; exit 1; }
+which flac > /dev/null || { echo "Requires flac"; exit 1; }
+which cddbget > /dev/null || { echo "Requires cddbget (from package libcddb-get-perl)"; exit 1; }
 
 cd /tmp
 
@@ -73,5 +73,5 @@ for (( i=$START ; i <= $TRACKS; i++ )) do
 done
 # add replay-gain for tracks as well as full album!
 echo "Adding replay-gain"
-metaflac --preserve-modtime --add-replay-gain "$TARGETDIR"/*.flac && echo "Done!"
+metaflac --preserve-modtime --add-replay-gain "$TARGETDIR/*.flac" && echo "Done!"
 rm "$FILE"

@@ -1,5 +1,6 @@
 #!/bin/sh
 # a simple wrapper around bib2bib that removes any personal annotations
+which bib2bib || { echo "Error: requires bib2bib (from the bibtex2html package)"; exit 1; }
 
 bib2bib --no-comment \
   --remove annote \
