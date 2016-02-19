@@ -1,0 +1,45 @@
+#!/bin/bash
+# writes corrected id3v2 tags for all mp3 files in the current directory
+which id3v2 > /dev/null || { echo "Error: could not find id3v2 command"; exit 1; }
+which preserve-modtime > /dev/null || preserve-modtime () { ${@:2} "$1"; }
+
+nfiles=`ls *.mp3 2> /dev/null | wc -l`
+if [ "$nfiles" == 0 ]; then
+  echo "Error: no .mp3 files found in the current directory"
+  exit 1
+fi
+
+echo "About to fix the id3v2 title tags of $nfiles mp3 files in the current directory."
+
+if [ $# ]; then
+  echo "The following extra arguments will be passed to id3v2: $@"
+fi
+echo -e "\nPress any key to get started, Ctrl+D or Ctrl+C to abort"
+
+read && find *.mp3 -print0 | while IFS="" read -r -d "" file; do
+#  title=`id3v2 --list "$file" | sed -n 's.TIT2 (Title/songname/content description): ..p'`
+  title=`id3v2 --list "$file" | sed -n 's/TIT2[^:]*: //p'`
+  #title=`metaflac --show-tag=TITLE "$file" | sed -n 's/TITLE=//p'`
+  trackno=`echo "$title" | grep -o '^[0-9]*'`
+  if [ -z "$trackno" ]; then
+    if [ $# ]; then
+      echo "$file: title tag looks alright, only running extra tagging commands"
+      preserve-modtime "$file" id3v2 "$@"
+      #metaflac --preserve-modtime "$@" "$file"
+    else
+      echo "$file: title tag looks alright, skipping"
+    fi
+  else
+    echo "Fixing $file"
+    title=`echo "$title" | sed -e 's/^[0-9]*[^0-9A-Za-z]*//g'`
+    filetitle=`basename "$file" .mp3 | grep -io "$title.*"`
+    if [ -z "$filetitle" ]; then
+      echo "Warning: file name does not seem to contain track title \"$title\""
+    elif [ "$title" != "$filetitle" ]; then
+      echo "id3 title appears truncated, using filename \"$filetitle\" instead"
+      title="$filetitle"
+    fi
+    preserve-modtime "$file" id3v2 -t "$title" -T $trackno "$@"
+    #metaflac --preserve-modtime --set-tag="TITLE=$title" "$@" "$file"
+  fi
+done

@@ -1,7 +1,7 @@
 #!/bin/sh
 
-which flac || { echo "Requires flac"; exit 1; }
-which lame || { echo "Requires lame"; exit 1; }
+which flac > /dev/null || { echo "Requires flac"; exit 1; }
+which lame > /dev/null || { echo "Requires lame"; exit 1; }
 
 OUTF=`basename "$1" .flac`.mp3
 

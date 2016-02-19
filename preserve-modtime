@@ -1,0 +1,22 @@
+#!/bin/sh
+if [ $# -lt 2 ]; then
+  echo "Usage: preserve-modtime 'file-pattern*' cmd [cmd-args]\n\nExecute the (presumably modifying) cmd on all files matching the file-pattern,\nafterwards resetting their file system modtime to whatever it was before. If\nrunning preserve-modtime on more than one file, make sure to quote the file\npattern with ' or \" quotes to stop * wildcard expansion from happening in the\nshell. Any matching files will automatically be supplied as the final argument\nto cmd (i.e. it will be appended to any other cmd-args passed)."
+  exit 1
+fi
+
+if [ ! `which $2` ] ; then
+  echo "Error: could not find command \"$2\". Did you forget to put 'quotes' around the file name pattern?"
+  exit 1
+fi
+
+# http://www.dwheeler.com/essays/filenames-in-shell.html
+FILES="$1"
+IFS=$(echo "\n\b")
+shift # strip first argument off the $@ args-array
+for file in $(eval 'ls $FILES'); do
+  if [ -e $file ]; then
+    mtime=`stat -c %y "$file"`
+    $@ "$file"
+    touch -d "$mtime" "$file"
+  fi
+done
