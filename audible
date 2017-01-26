@@ -1,0 +1,18 @@
+#!/bin/sh
+if [ $# -ne 3 ]; then
+  echo "Remove DRM protection from Audible .aax files using audible-activator"
+  echo "Usage: audible <yourlogin@ema.il> <password> <file(s)-or-quoted-mask.aax>"
+  exit 1
+fi
+
+if [ ! -f "audible-activator.py" ]; then
+  wget https://raw.githubusercontent.com/inAudible-NG/audible-activator/master/audible-activator.py || exit 1
+fi
+if [ ! -f "chromedriver" ]; then
+  wget http://chromedriver.storage.googleapis.com/2.20/chromedriver_linux64.zip && unzip chromedriver_linux64.zip || exit 1
+fi
+
+BYTES=./audible-activator.py "$1" "$2"
+for file in "$3"; do
+  ffmpeg -activation_bytes $BYTES -i "$file" -vn -acodec copy "`basename $file .aax`.aac"
+done

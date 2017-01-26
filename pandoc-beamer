@@ -1,5 +1,12 @@
 #!/bin/sh
+if [ $# -eq 0 ]; then
+  echo 'Usage: pandoc-beamer <input-file> [--other "pandoc" -args ...]'
+  exit 1
+fi
 # other options:
 # -V theme:Warsaw for a theme with header/footer
 # -i for incremental expansion of headers/lists
-pandoc -t beamer "$1" --bibliography=$HOME/library.bib -o "`basename $1 .md`.pdf"
+FILE="$1"
+OUTF="`basename $FILE .md`.pdf"
+shift # strip first argument off the $@ args-array
+pandoc -t beamer "$FILE" --bibliography=$HOME/library.bib -o "$OUTF" "$@" && xdg-open "$OUTF" 2> /dev/null

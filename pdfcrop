@@ -1,0 +1,3 @@
+#!/bin/sh
+# 1bp = 1/72 inch = .3527mm
+/usr/bin/pdfcrop --margins 10 $@

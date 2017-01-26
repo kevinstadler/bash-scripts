@@ -18,7 +18,8 @@ fi
 
 which aux2bib > /dev/null
 if [ $? -eq 0 ]; then
-  aux2bib "$1" | bib2bibclean -q -s \$key -ob "$OUTF" -oc "$KEYFILE"
+  # work around bib2bib 1.97 not recognising argument
+  cat "$1" | aux2bib - | bib2bibclean -q -s \$key -ob "$OUTF" -oc "$KEYFILE"
 else
 
   # support for multiple .bib files

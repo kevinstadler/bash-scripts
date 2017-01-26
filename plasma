@@ -1,0 +1,72 @@
+#!/bin/sh
+which convert > /dev/null || { echo "Could not find ImageMagick"; exit 1; }
+
+if [ $# -eq 0 ]; then
+  echo "Usage: plasma <input-img> [density] [plasma-colour] [compose-mode] [outfile]"
+  exit 1
+fi
+
+if [ "$4" ]; then
+  COMPOSE="$4"
+else
+  COMPOSE="Multiply"
+fi
+
+SIZE=`convert "$1" -ping -format "%wx%h" info:`
+#echo $SIZE
+SIZE="2400x1200"
+if [ "$5" ]; then
+  OUTF="$5"
+else
+  EXT=`echo "$1" | awk -F . '{print $NF}'`
+  OUTF="`basename $1 .$EXT`-$3${COMPOSE}.$EXT"
+fi
+
+
+DISSOLVE="$2"
+
+# generate background
+#if [ "$3" == "random" ]; then
+  #read : "$3" nboxes blur
+#  BG="-size ${nboxes}x${nboxes} xc: +noise Random -resize $SIZE"
+  # blur = radiusxsigma http://www.imagemagick.org/Usage/blur/#blur
+#  BG="-size $SIZE xc: +noise Random -blur 0x2 -auto-level"
+#else
+#  BG="-size $SIZE plasma:$3"
+#fi
+BG="-size $SIZE canvas:$3"
+
+# result image will always have the same size as the *background*
+#composite {overlay} {background} [{mask}] [-compose {method}] {result}
+#convert {background} {overlay} [{mask}] [-compose {method}] -composite {result}
+
+case "$COMPOSE" in
+  "blend") # blend two images, treating background/overlay equally
+    # composite -blend {src_percent}x{dst_percent} overlay bgnd result 
+    composite "$1" -gravity West -blend "$DISSOLVE" $BG "$OUTF"
+    ;;
+  "dissolve") # adjust transparency of the overlay image before it is overlaid
+    # composite -dissolve {src_percent}x{dst_percent} overlay bgnd result 
+    composite "$1" -gravity West -dissolve "$DISSOLVE" $BG "$OUTF"
+# http://www.imagemagick.org/Usage/compose/#dissolve
+# If only a single percentage argument is given, only the overlay is dissolved
+# to leave that amount, (0 percent is completely transparent, 100 source is
+# unchanged) before being overlaid (using the 'Over' compose method) onto the
+# background. Furthermore, if you continue past a value of 100% (also new for
+# IM v6), it will then start to dissolve away the background image.
+# In other words, in the 0 to 100 percent range, the background image is not
+# dissolved at all (with a dst_percent of 100%), while in the 100 to 200 range,
+# the overlay is left as is, (src_percent set to 100%), and the background is
+# dissolved, so it is completely gone when the argument reaches a value of 200%)
+    ;;
+  *)
+    # full table of methods: http://www.imagemagick.org/Usage/compose/tables/
+    # examples: http://www.imagemagick.org/Usage/compose/#math
+    echo $COMPOSE
+#    composite "$1" $BG -gravity West -compose "$COMPOSE" "$OUTF"
+#    convert -size 60x30 xc: +noise Random -scale $SIZE "$1" -gravity West -compose "$COMPOSE" -composite "$OUTF"
+    convert -gravity West -size 15x15 xc: +noise Random -scale 1200x1200 -set option:distort:viewport 2400x1200+0+0 -distort SRT 0 "$1" -compose "$COMPOSE" -composite -pointsize 70 -fill white -annotate +1220-600 'Charlie Murphy\nfoo\nbar' "$OUTF"
+#convert -size 20x20 xc: +noise Random -scale 400x400 -set option:distort:viewport 800x400+0+0 -distort SRT 0 +repage
+esac
+
+echo "Output written to $OUTF"

@@ -17,15 +17,12 @@ fi
 echo -e "\nPress any key to get started, Ctrl+D or Ctrl+C to abort"
 
 read && find *.mp3 -print0 | while IFS="" read -r -d "" file; do
-#  title=`id3v2 --list "$file" | sed -n 's.TIT2 (Title/songname/content description): ..p'`
   title=`id3v2 --list "$file" | sed -n 's/TIT2[^:]*: //p'`
-  #title=`metaflac --show-tag=TITLE "$file" | sed -n 's/TITLE=//p'`
   trackno=`echo "$title" | grep -o '^[0-9]*'`
   if [ -z "$trackno" ]; then
     if [ $# ]; then
       echo "$file: title tag looks alright, only running extra tagging commands"
       preserve-modtime "$file" id3v2 "$@"
-      #metaflac --preserve-modtime "$@" "$file"
     else
       echo "$file: title tag looks alright, skipping"
     fi
@@ -40,6 +37,5 @@ read && find *.mp3 -print0 | while IFS="" read -r -d "" file; do
       title="$filetitle"
     fi
     preserve-modtime "$file" id3v2 -t "$title" -T $trackno "$@"
-    #metaflac --preserve-modtime --set-tag="TITLE=$title" "$@" "$file"
   fi
 done

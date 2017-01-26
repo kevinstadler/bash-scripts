@@ -1,0 +1,20 @@
+#!/bin/bash
+if [ $# ]; then
+  echo "Usage: id3tag <file1 file2 ...>"
+  exit 1
+fi
+files=("$@")
+echo "Tagging the following files: ${files[@]}"
+echo
+echo "Please enter the arguments to be passed on to id3v2, one argument per line. Finish with Ctrl+D"
+echo
+
+readarray args
+echo ${args[@]}
+for file in "${files[@]}"; do
+  echo "Tagging: $file"
+  mtime=`stat -c %y "$file"`
+  id3v2 -A "The meat of life" -y 2010 "$file"
+  touch -d "$mtime" "$file"
+done
+echo "Done."

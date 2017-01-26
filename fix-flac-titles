@@ -1,0 +1,33 @@
+#!/bin/bash
+# writes corrected title tags for all flac files in the current directory
+which metaflac > /dev/null || { echo "Error: could not find metaflac command"; exit 1; }
+
+nfiles=`ls *.flac 2> /dev/null | wc -l`
+if [ "$nfiles" == 0 ]; then
+  echo "Error: no .flac files found in the current directory"
+  exit 1
+fi
+
+echo "About to fix the title tags of $nfiles flac files in the current directory."
+
+if [ $# ]; then
+  echo -e "The following extra arguments will be passed to metaflac:\n$@\n\nNote that metaflac doesn't automatically *overwrite* tags but only adds them, so\nyou might want to prepend --remove-tag=\"FIELD\" before any --set-tag commands."
+fi
+echo -e "\nPress any key to get started, Ctrl+D or Ctrl+C to abort"
+
+read && find *.flac -print0 | while IFS="" read -r -d "" file; do
+  title=`metaflac --show-tag=TITLE "$file" | sed -n 's/.*TITLE=//pI'`
+  trackno=`echo "$title" | grep -o '^[0-9]*'`
+  if [ -z "$trackno" ]; then
+    if [ $# ]; then
+      echo "$file: title tag looks alright, only running extra tagging commands"
+      metaflac --preserve-modtime "$@" "$file"
+    else
+      echo "$file: title tag looks alright, skipping"
+    fi
+  else
+    echo "Fixing $file"
+    title=`echo "$title" | sed -e 's/^[0-9]*[^0-9A-Za-z]*//g'`
+    metaflac --preserve-modtime --remove-tag="TITLE" --set-tag="TITLE=$title" --remove-tag="TRACKNUMBER" --set-tag="TRACKNUMBER=$trackno" "$@" "$file"
+  fi
+done
