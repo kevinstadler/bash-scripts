@@ -1,0 +1,3 @@
+#!/bin/sh
+# append in WGS84 latlong format
+osm2pgsql --slim --cache 1000 -d gis --latlong --keep-coastlines --append $@

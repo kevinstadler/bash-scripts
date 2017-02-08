@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# render a file from markdown (with citeproc [@References]) to github markdown.
+# pandoc will look for a template file 'jekyll.markdown_github' in its template
+# path - use this template to control how much of the YAML header is rendered.
+# this template, for example, will only produce a minimal header in the output:
+#---
+#title: $title$
+#$if(description)$
+#description: $description$
+#$endif$
+#---
+#$body$
+
+if [ $# -ne 1 ]; then
+  echo "Usage: pandoc-jekyll-references <filename>"
+  exit 1
+fi
+
+( cat "$1"; echo -e '\n###References' ) | pandoc --bibliography=$HOME/library.bib --metadata=link-citations:True --from=markdown --to=markdown_github --template=jekyll -o "$1.md"
