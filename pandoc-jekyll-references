@@ -17,4 +17,12 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-( cat "$1"; echo -e '\n###References' ) | pandoc --bibliography=$HOME/library.bib --metadata=link-citations:True --from=markdown --to=markdown_github --template=jekyll -o "$1.md"
+pandoc --bibliography=$HOME/library.bib --metadata=link-citations:True --from=markdown --to=markdown-citations-header_attributes --wrap=preserve --template=jekyll -o "$1.md" "$1" &&
+# --template=jekyll
+# +yaml_metadata_block
+# postprocessing to:
+# 1. make reference-links target="_self" (kramdown-specific)
+# 2. remove Mendeley's overly zealous tilde protection
+sed -i -e 's/\(#ref-\w\+)\)/\1{:target="_self"}/g' -e 's/{\([^~]*\)~}/\1~/g' "$1.md"
+# 3. make quotations italics (match is greedy until final parentheses on line)
+# -e 's/^> /> "*\1*"/g'
