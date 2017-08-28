@@ -1,6 +1,6 @@
 #!/bin/sh
 EXT=`echo "$1" | awk -F . '{print $NF}'`
-if [ "$EXT" = "Rmd" ] || [ "$EXT" = "R" ]; then
+if [ "$EXT" = "Rmd" ] || [ "$EXT" = "md" ] || [ "$EXT" = "R" ]; then
   Rscript -e "rmarkdown::render(\"$1\")" && xdg-open "`basename \"$1\" .Rmd`.pdf" 2> /dev/null
 elif [ "$EXT" = "Rnw" ]; then
   Rscript -e "knitr::knit(\"$1\")"

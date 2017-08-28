@@ -1,0 +1,26 @@
+#!/bin/sh
+
+OUTF="$1.bib"
+KEYFILE="keys.tmp"
+
+if [ $# != 1 ]; then
+  echo "Usage: extract-markdown-references <filename.md>"
+  exit 1
+elif [ ! -f "$1" ]; then
+  echo "File does not exist: $1"
+  exit 1
+fi
+
+KEYS=""
+for KEY in `grep -oP "(?<=\@)\w+" "$1"`
+do 
+  KEYS="$KEYS \$key=\"$KEY\" or"
+  echo "* $KEY"
+done
+
+bib2bibclean -q -s \$key -c "$KEYS 1=2" -oc "$KEYFILE" -ob "$OUTF" /home/kevin/library.bib
+#bib2bibclean -q -s \$key -ob "$OUTF" -oc "$KEYFILE" "/home/kevin/library.bib"
+
+echo
+echo "Wrote `cat $KEYFILE | wc -w` bib-entries to $OUTF"
+echo

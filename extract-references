@@ -19,7 +19,7 @@ fi
 which aux2bib > /dev/null
 if [ $? -eq 0 ]; then
   # work around bib2bib 1.97 not recognising argument
-  cat "$1" | aux2bib - | bib2bibclean -q -s \$key -ob "$OUTF" -oc "$KEYFILE"
+  aux2bib "$1" | bib2bibclean -q -s \$key -ob "$OUTF" -oc "$KEYFILE"
 else
 
   # support for multiple .bib files
@@ -45,6 +45,9 @@ else
   # same as `aux2bib "$1" > references.bib` but removes various (private) bibtex-fields
   bib2bibclean -q -s \$key -c "$KEYS 1=2" -oc "$KEYFILE" -ob "$OUTF" $BIBS
 fi
+
+# fix mendeley link underscore, ampersand and tilde protection
+sed -i -e 's/{\(\\_\|\\&\|~\)}/\1/g' "$OUTF"
 
 echo
 echo "Wrote `cat $KEYFILE | wc -w` bib-entries to $OUTF"

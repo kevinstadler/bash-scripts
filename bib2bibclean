@@ -13,4 +13,3 @@ bib2bib --no-comment \
   --remove file \
   "$@"
 #  --remove abstract \
-#  --remove url \

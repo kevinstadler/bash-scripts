@@ -1,0 +1,4 @@
+shopt -s extglob
+# complete directory names only if R(md|nw) yields no autocomplete matches
+# see https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion-Builtins.html
+complete -f -o dirnames -X '!*.md' markdown

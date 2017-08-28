@@ -1,0 +1,9 @@
+#!/bin/sh
+if [ $# -lt 1 ]; then
+  echo 'Add kramdown-compatible {:target="_blank"} to all [markdown-links](...) in the given file.
+
+Usage: foo <input-file> [link-target]'
+  exit 1
+fi
+
+sed -e 's//{:target="_blank"}/g' "$1"
