@@ -14,15 +14,15 @@ else
 fi
 
 # check for pdftk, otherwise use ghostscript
-#which pdftk > /dev/null
-#if [ $? -eq 0 ]; then
-  # pdftk
-#  echo "Calling pdftk"
-#  pdftk A="$1" cat A$2-$3 output "$OUTF"
-#else
+which pdftk > /dev/null
+if [ $? -eq 0 ]; then
+  echo "Calling pdftk"
+  pdftk A="$1" cat A$2-$3 output "$OUTF"
 
-# ghostscript
-gs -sDEVICE=pdfwrite -dNOPAUSE -dBATCH -dSAFER -dFirstPage=$2 -dLastPage=$3 -sOutputFile="$OUTF" "$1"
+else
+  # ghostscript
+  gs -sDEVICE=pdfwrite -dNOPAUSE -dBATCH -dSAFER -dFirstPage=$2 -dLastPage=$3 -sOutputFile="$OUTF" "$1"
+fi
 
 if [ $? -eq 0 ]; then
   echo "Cutting successful, file output to $OUTF"

@@ -1,0 +1,8 @@
+#!/bin/sh
+gs -q -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile="$1-small.pdf" -dPDFSETTINGS=/printer "$1"
+
+#-dPDFSETTINGS=/screen   (screen-view-only quality, 72 dpi images)
+#-dPDFSETTINGS=/ebook    (low quality, 150 dpi images)
+#-dPDFSETTINGS=/printer  (high quality, 300 dpi images)
+#-dPDFSETTINGS=/prepress (high quality, color preserving, 300 dpi imgs)
+#-dPDFSETTINGS=/default  (almost identical to /screen)
