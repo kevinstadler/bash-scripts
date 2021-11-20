@@ -1,0 +1,12 @@
+#!/bin/sh
+echo "Total number of frames: `ffprobe -v error -select_streams v:0 -show_entries stream=nb_frames -of default=nokey=1:noprint_wrappers=1 $1`"
+echo "Keyframes:"
+if [ -z "$2" ]; then
+  PATTERN="frame"
+else
+  PATTERN="$2"
+fi
+
+ffprobe -v error -select_streams v -show_frames -show_entries frame=pict_type -of csv "$1" | grep -n "$PATTERN"
+
+echo "Total number of frames: `ffprobe -v error -select_streams v:0 -show_entries stream=nb_frames -of default=nokey=1:noprint_wrappers=1 $1`"
